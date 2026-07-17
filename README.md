@@ -1,1 +1,1 @@
-# team-XX-inventory
+# team-10-inventory
