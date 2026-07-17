@@ -6,7 +6,7 @@
 |---|---|---|
 | นายอมรเทพ ยมภา | ...             | Product Owner |
 | นางสาวหทัยรัตน์ ใจธรรม  | ...             | Scrum Master / Developer |
-| นางสาวกุลปรียา ประดิษฐ์  | ...             | Developer |
+| นางสาวกุลปรียา ประดิษฐ์  | kulpreeya-a11y             | Developer |
 
 ## Branching Strategy
 
