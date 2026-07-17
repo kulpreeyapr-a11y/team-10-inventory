@@ -4,9 +4,9 @@
 
 | ชื่อ | GitHub Username | บทบาท |
 |---|---|---|
-|   | ...             | Product Owner |
-| ...  | ...             | Scrum Master / Developer |
-| ...  | ...             | Developer |
+| นายอมรเทพ ยมภา | ...             | Product Owner |
+| นางสาวหทัยรัตน์ ใจธรรม  | ...             | Scrum Master / Developer |
+| นางสาวกุลปรียา ประดิษฐ์  | ...             | Developer |
 
 ## Branching Strategy
 
