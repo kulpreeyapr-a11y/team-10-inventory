@@ -5,7 +5,7 @@
 | ชื่อ | GitHub Username | บทบาท |
 |---|---|---|
 | นายอมรเทพ ยมภา |amonthep-kong | Product Owner |
-| นางสาวหทัยรัตน์ ใจธรรม  | ...             | Scrum Master / Developer |
+| นางสาวหทัยรัตน์ ใจธรรม  | hathairatja-wq | Scrum Master / Developer |
 | นางสาวกุลปรียา ประดิษฐ์  | kulpreeya-a11y             | Developer |
 
 ## Branching Strategy
