@@ -4,7 +4,7 @@
 
 | ชื่อ | GitHub Username | บทบาท |
 |---|---|---|
-| นายอมรเทพ ยมภา | ...             | Product Owner |
+| นายอมรเทพ ยมภา |amonthep-kong | Product Owner |
 | นางสาวหทัยรัตน์ ใจธรรม  | ...             | Scrum Master / Developer |
 | นางสาวกุลปรียา ประดิษฐ์  | kulpreeya-a11y             | Developer |
 
