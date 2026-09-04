@@ -17,11 +17,11 @@
 
 ---
 
-## ตารางเปรียบเทียบผลลัพธ์ Before vs After Context
+## ตารางเปรียบเทียบ Before vs After Context (ขั้นที่ 4 vs ขั้นที่ 6)
 
 | ประเด็น | ก่อนมี context (ขั้นที่ 4) | หลังมี context (ขั้นที่ 6) |
 |---|---|---|
-| **การแยกไฟล์/ความรับผิดชอบ** | เขียนรวมกันทั้งหมดในไฟล์เดียว (`inventory_no_context.py`) | แยกไฟล์ตามหน้าที่ (`models.py`, `notifiers.py`, `service.py`) |
-| **Type Hint + Docstring** | ขาด Type hint และไม่มี docstring อธิบาย | มี Type hint ครบถ้วน และมี docstring ภาษาไทยทุก method |
-| **การผูกกันของ Service กับ Notifier** | Service เรียกใช้/ตัดสินใจสร้าง Notifier โดยตรง | Service รับ Notifier ผ่าน Constructor (Dependency Injection) |
-| **การ Hardcode & Code Design** | Hardcode เงื่อนไขช่องทาง และปน I/O ใน logic | แยก I/O ออกจาก Logic ยึดตามหลัก SOLID (SRP, DIP, OCP) |
+| **แยกไฟล์/ความรับผิดชอบ** | รวมทุกอย่างอยู่ในไฟล์เดียว (`inventory_no_context.py`) ขัดต่อหลัก SRP | แยกไฟล์ตามความรับผิดชอบชัดเจน (`src/models.py`, `src/notifiers.py`, `src/service.py`) |
+| **type hint + docstring** | ไม่มี Type Hint ใน Function Signature และไม่มี Docstring | มี Type Hint ครบถ้วนทุก Method และมี Docstring ภาษาไทยอธิบาย Public Method |
+| **service ผูกกับ notifier ตรง ๆ หรือไม่** | ผูกตรง (High Coupling) โดย Service สร้างและเรียกใช้ Email/SMS เอง | ไม่ผูกตรง โดย Service รับ `Notifier` Protocol ผ่าน Constructor Injection (DIP) |
+| **hardcode config หรือไม่** | Hardcode ช่องทางแจ้งเตือนและข้อความใน Business Logic | ไม่ Hardcode โดยรับ Notifier ที่ตั้งค่าเสร็จแล้วเข้ามาจากภายนอก |
