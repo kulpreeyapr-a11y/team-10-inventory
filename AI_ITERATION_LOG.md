@@ -25,3 +25,24 @@
 | **type hint + docstring** | ไม่มี Type Hint ใน Function Signature และไม่มี Docstring | มี Type Hint ครบถ้วนทุก Method และมี Docstring ภาษาไทยอธิบาย Public Method |
 | **service ผูกกับ notifier ตรง ๆ หรือไม่** | ผูกตรง (High Coupling) โดย Service สร้างและเรียกใช้ Email/SMS เอง | ไม่ผูกตรง โดย Service รับ `Notifier` Protocol ผ่าน Constructor Injection (DIP) |
 | **hardcode config หรือไม่** | Hardcode ช่องทางแจ้งเตือนและข้อความใน Business Logic | ไม่ Hardcode โดยรับ Notifier ที่ตั้งค่าเสร็จแล้วเข้ามาจากภายนอก |
+
+
+
+
+---
+
+## บันทึกการ Iteration (ขั้นที่ 7)
+
+### Iteration รอบที่ 1: ปรับแก้เงื่อนไขสต็อกต่ำใน spec.md
+- **ผลที่ผิด:** AI ตีความเงื่อนไขสต็อกต่ำเป็น `<= threshold` ทำให้เมื่อสต็อกเท่ากับ threshold พอดี ระบบส่งแจ้งเตือน ทั้งที่ต้องการให้แจ้งเมื่อต่ำกว่า (< threshold)
+- **สาเหตุ:** `specs/spec.md` ในส่วน Acceptance Criteria ไม่ระบุกรณี Edge Case ให้ชัดเจน
+- **การแก้ไขที่ต้นทาง:** เพิ่ม Edge Case Scenario ใน `specs/spec.md` ว่ากรณีสต็อกเท่ากับ threshold พอดี ต้องไม่ส่งการแจ้งเตือน
+- **ผลหลังแก้:** AI ปรับปรุง Logic การเช็กสต็อกเป็น `quantity < threshold` ได้ตรงตามความต้องการ
+
+---
+
+### Iteration รอบที่ 2: เพิ่มการย้ำเตือนข้อห้ามใน .ai-rules.md
+- **ผลที่ผิด:** AI พยายามเสนอการใช้ไลบรารีส่งอีเมลจริง เช่น `smtplib` ในการสร้าง `notifiers.py`
+- **สาเหตุ:** ในการ Prompt สั่งงาน AI ไม่ได้ย้ำเตือนกฎข้อห้ามส่งอีเมลจริงจาก Context Rule
+- **การแก้ไขที่ต้นทาง:** ทำการชี้กลับไปที่กฎใน `.ai-rules.md` ในส่วน "ข้อห้าม" เรื่องห้ามส่ง email/sms จริง และสั่งให้ทำตามกฎเคร่งครัด
+- **ผลหลังแก้:** AI ยกเลิกการใช้ `smtplib` และเปลี่ยนมาใช้การ `print()` จำลองการส่งตามข้อกำหนดของ Lab
