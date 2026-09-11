@@ -1,4 +1,4 @@
-# Class Diagram
+# Class Diagram (Refactored)
 
 ```mermaid
 classDiagram
@@ -28,19 +28,26 @@ classDiagram
         +str phone_number
         +send(message: str) None
     }
+
+    class NotifierFactory {
+        +create(channel: str) Notifier
+    }
     
     class InventoryService {
         +dict products
-        +list notifiers
+        -list _observers
+        +attach_observer(notifier: Notifier) None
+        +detach_observer(notifier: Notifier) None
+        -_notify_observers(message: str) None
         +add_product(product: Product) None
         +record_stock_in(product_name: str, quantity: int) None
         +record_stock_out(product_name: str, quantity: int) None
         +generate_value_report() dict
-        -_notify_managers(product: Product) None
     }
 
     Product --> Category
     Notifier <|.. EmailNotifier : realization
     Notifier <|.. SMSNotifier : realization
-    InventoryService o-- Notifier : dependency
+    NotifierFactory ..> Notifier : creates
+    InventoryService o-- Notifier : observers (Observer Pattern)
     InventoryService o-- Product : aggregation
