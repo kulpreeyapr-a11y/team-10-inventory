@@ -45,6 +45,7 @@ tests/test_discount.py:57: in test_apply_coupon_valid_SAVE10
     assert apply_coupon(1000, "SAVE10") == 145.0
 E   AssertionError: assert 100.0 == 145.0
 
+```
 ### 3. สมมติฐาน
 ฟังก์ชัน apply_coupon มีการเรียกใช้ calculate_discount(1000) เพื่อคำนวณราคาส่วนลดตั้งต้น เมื่อ calculate_discount ทำงานผิดพลาด ณ จุดขอบเขต 1,000 บาท จึงทำให้ส่วนลดคูปองคำนวณผิดพลาดตามไปด้วย
 
