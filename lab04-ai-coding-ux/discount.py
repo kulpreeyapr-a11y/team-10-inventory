@@ -1,36 +1,29 @@
-"""
-Discount Module
-ระบบคำนวณส่วนลดราคาสินค้า
-"""
+def apply_discount(price: float, discount_percent: float) -> float:
+    """คำนวณราคาสินค้าหลังหักส่วนลดเป็นเปอร์เซ็นต์"""
+    if price < 0 or discount_percent < 0:
+        raise ValueError("Price and discount must be non-negative")
+    # แก้ไข: คำนวณส่วนลดแบบเปอร์เซ็นต์ที่ถูกต้อง (discount_percent / 100)
+    return price * (1 - discount_percent / 100.0)
 
-def calculate_discount(amount: float) -> float:
-    """
-    คำนวณส่วนลดตามยอดซื้อ:
-    - น้อยกว่า 0: raise ValueError
-    - 1,000 ถึง 4,999 บาท: ส่วนลด 5% (0.05)
-    - 5,000 บาทขึ้นไป: ส่วนลด 10% (0.10)
-    """
-    if amount < 0:
-        raise ValueError("ยอดซื้อต้องไม่ติดลบ")
-    
-    # แก้ไข: เปลี่ยนจาก > เป็น >= เพื่อให้ครอบคลุมจุดขอบเขตพอดี (1000 และ 5000)
-    if amount >= 5000:
-        return amount * 0.10
-    elif amount >= 1000:
-        return amount * 0.05
-    return 0.0
 
-def calculate_bulk_discount(prices: list) -> float:
-    """คำนวณส่วนลดรวมจากรายการราคาสินค้าหลายชิ้น"""
+def bulk_total(prices: list[float], discount_percent: float) -> float:
+    """คำนวณราคารวมของสินค้าหลายชิ้นหลังหักส่วนลด"""
+    total = sum(prices)
+    return apply_discount(total, discount_percent)
+
+
+def average_price(prices: list[float]) -> float:
+    """คืนราคาเฉลี่ยของรายการสินค้า"""
+    # แก้ไข: เช็คถ้าลิสต์ว่าง ให้คืนค่า 0.0 ป้องกัน ZeroDivisionError
     if not prices:
         return 0.0
-    total = sum(prices)
-    return calculate_discount(total)
+    return sum(prices) / len(prices)
 
-def apply_coupon(amount: float, coupon: str = None) -> float:
-    """คำนวณส่วนลดสุทธิเมื่อใช้คูปองพิเศษ (เช่น SAVE10)"""
-    base_discount = calculate_discount(amount)
-    if coupon == "SAVE10":
-        net_amount = amount - base_discount
-        return base_discount + (net_amount * 0.10)
-    return base_discount
+
+def cheapest_n(prices: list[float], n: int) -> list[float]:
+    """คืนรายการราคาที่ถูกที่สุด N รายการแรก"""
+    if n <= 0:
+        return []
+    # แก้ไข: เรียงลำดับราคาจากน้อยไปมาก แล้วเลือกเอา N รายการแรก
+    sorted_prices = sorted(prices)
+    return sorted_prices[:n]

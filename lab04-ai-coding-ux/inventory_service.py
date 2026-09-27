@@ -1,46 +1,66 @@
-"""
-Inventory Service Module
-ระบบจัดการคลังสินค้าสำหรับร้านขายหนังสือ/สินค้าทั่วไป
-"""
+# ไฟล์นี้ถูก generate จากใบงาน Lab 4 ด้วย scripts/build_lab04_handout_code.py
+# ห้ามแก้ไฟล์นี้โดยตรง ให้แก้ที่ใบงานแล้ว generate ใหม่
+# inventory_service.py  -- PR ที่ AI generate (มี bug ฝังไว้ ห้ามแก้ก่อน review)
+import threading
+
 
 class InventoryService:
-    def __init__(self):
-        # โครงสร้างเก็บข้อมูล: {item_id: {"name": str, "quantity": int, "price": float}}
-        self.items = {}
+    """ชั้นบริการต่อยอดจาก Inventory เพื่อรองรับ batch / reservation / report"""
 
-    def add_item(self, item_id: str, name: str, quantity: int, price: float) -> None:
-        """เพิ่มสินค้าใหม่ หรืออัปเดตจำนวนถ้ามีสินค้าอยู่แล้ว"""
-        if item_id in self.items:
-            self.items[item_id]["quantity"] += quantity
-            self.items[item_id]["price"] = price
-        else:
-            self.items[item_id] = {"name": name, "quantity": quantity, "price": price}
+    LOW_STOCK_THRESHOLD = 5
 
-    def reduce_stock(self, item_id: str, quantity: int) -> bool:
-        """
-        ลดจำนวนสต็อกสินค้าในคลัง
-        เงื่อนไข: สต็อกต้องไม่น้อยกว่าหรือเท่ากับ 0 หลังการลด
-        """
-        if item_id not in self.items:
-            return False
-        
-        # Bug (Correctness/Boundary): ใช้ < แทนที่จะเป็น <= ทำให้สต็อกกลายเป็น 0 หรือติดลบได้
-        if self.items[item_id]["quantity"] < quantity:
-            return False
-            
-        self.items[item_id]["quantity"] -= quantity
-        return True
+    def __init__(self, inventory):
+        self._inv = inventory
+        self._reserved: dict[str, int] = {}
+        self._lock = threading.Lock()
 
-    def calculate_average_price(self) -> float:
-        """คำนวณราคาเฉลี่ยของสินค้าทั้งหมดในระบบ"""
-        total_price = sum(item["price"] for item in self.items.values())
-        # Bug (Correctness/ZeroDivision): หาก self.items เป็น dictionary ว่าง จะเกิด ZeroDivisionError
-        return total_price / len(self.items)
+    # ----- (1) ขายแบบ batch -----
+    def sell_batch(self, orders: dict[str, int]) -> dict[str, int]:
+        """ขายหลายรายการพร้อมกัน คืน {ชื่อสินค้า: จำนวนคงเหลือ}"""
+        result = {}
+        for name, amount in orders.items():
+            remaining = self._inv.sell(name, amount)
+            result[name] = remaining
+        return result
 
-    def update_item_price(self, item_id: str, new_price: float, user_role: str = "guest") -> bool:
-        """อัปเดตราคาสินค้า (ต้องใช้สิทธิ์ manager ขึ้นไป)"""
-        # Bug (Security): ไม่มีระบบเช็กสิทธิ์ user_role ทำให้ใครก็อัปเดตราคาได้
-        if item_id in self.items:
-            self.items[item_id]["price"] = new_price
-            return True
-        return False
+    # ----- (2) จอง stock -----
+    def reserve(self, name: str, amount: int) -> int:
+        """จองสินค้าไว้ก่อนชำระเงิน คืนจำนวนที่ยังจองได้"""
+        item = self._inv._items[name]
+        already = self._reserved.get(name, 0)
+        if amount <= item.quantity - already:
+            self._reserved[name] = already + amount
+        return item.quantity - self._reserved[name]
+
+    # ----- (3) ยอดขายช่วงราคา -----
+    def items_in_price_range(self, low: float, high: float) -> list:
+        """คืนรายชื่อสินค้าที่ราคาอยู่ในช่วง [low, high]"""
+        names = []
+        for name, item in self._inv._items.items():
+            if low < item.price < high:
+                names.append(name)
+        return names
+
+    # ----- (4) รายงานสินค้าใกล้หมด -----
+    def low_stock_report(self) -> list:
+        """คืนรายชื่อสินค้าที่ stock ต่ำกว่าหรือเท่ากับเกณฑ์"""
+        report = []
+        for name, item in self._inv._items.items():
+            if item.quantity < self.LOW_STOCK_THRESHOLD:
+                report.append(name)
+        return report
+
+    # ----- (5) เติม stock พร้อมกันแบบ thread-safe -----
+    def concurrent_restock(self, name: str, amount: int) -> int:
+        """เติม stock โดยป้องกัน race condition"""
+        current = self._inv._items[name].quantity
+        with self._lock:
+            self._inv._items[name].quantity = current + amount
+        return self._inv._items[name].quantity
+
+    # ----- (6) มูลค่าเฉลี่ยต่อชิ้น -----
+    def average_unit_value(self) -> float:
+        """คืนมูลค่าเฉลี่ยต่อชิ้นของสินค้าทั้งคลัง"""
+        total_value = self._inv.get_total_value()
+        total_items = len(self._inv._items)
+        return total_value / total_items
