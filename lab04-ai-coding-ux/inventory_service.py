@@ -17,27 +17,37 @@ class InventoryService:
     # ----- (1) ขายแบบ batch -----
     def sell_batch(self, orders: dict[str, int]) -> dict[str, int]:
         """ขายหลายรายการพร้อมกัน คืน {ชื่อสินค้า: จำนวนคงเหลือ}"""
-        result = {}
-        for name, amount in orders.items():
-            remaining = self._inv.sell(name, amount)
-            result[name] = remaining
-        return result
+        with self._lock:
+            # Validate ก่อนว่าขายได้ทุกรายการหรือไม่
+            for name, amount in orders.items():
+                if name not in self._inv._items or self._inv._items[name].quantity < amount:
+                    raise ValueError(f"Cannot process order for {name}")
+            
+            result = {}
+            for name, amount in orders.items():
+                remaining = self._inv.sell(name, amount)
+                result[name] = remaining
+            return result
 
     # ----- (2) จอง stock -----
     def reserve(self, name: str, amount: int) -> int:
         """จองสินค้าไว้ก่อนชำระเงิน คืนจำนวนที่ยังจองได้"""
-        item = self._inv._items[name]
-        already = self._reserved.get(name, 0)
-        if amount <= item.quantity - already:
-            self._reserved[name] = already + amount
-        return item.quantity - self._reserved[name]
+        with self._lock:
+            if name not in self._inv._items:
+                raise KeyError(f"Item {name} not found")
+            
+            item = self._inv._items[name]
+            already = self._reserved.get(name, 0)
+            if amount <= item.quantity - already:
+                self._reserved[name] = already + amount
+            return item.quantity - self._reserved[name]
 
     # ----- (3) ยอดขายช่วงราคา -----
     def items_in_price_range(self, low: float, high: float) -> list:
         """คืนรายชื่อสินค้าที่ราคาอยู่ในช่วง [low, high]"""
         names = []
         for name, item in self._inv._items.items():
-            if low < item.price < high:
+            if low <= item.price <= high:
                 names.append(name)
         return names
 
@@ -46,21 +56,23 @@ class InventoryService:
         """คืนรายชื่อสินค้าที่ stock ต่ำกว่าหรือเท่ากับเกณฑ์"""
         report = []
         for name, item in self._inv._items.items():
-            if item.quantity < self.LOW_STOCK_THRESHOLD:
+            if item.quantity <= self.LOW_STOCK_THRESHOLD:
                 report.append(name)
         return report
 
     # ----- (5) เติม stock พร้อมกันแบบ thread-safe -----
     def concurrent_restock(self, name: str, amount: int) -> int:
         """เติม stock โดยป้องกัน race condition"""
-        current = self._inv._items[name].quantity
         with self._lock:
+            current = self._inv._items[name].quantity
             self._inv._items[name].quantity = current + amount
-        return self._inv._items[name].quantity
+            return self._inv._items[name].quantity
 
     # ----- (6) มูลค่าเฉลี่ยต่อชิ้น -----
     def average_unit_value(self) -> float:
         """คืนมูลค่าเฉลี่ยต่อชิ้นของสินค้าทั้งคลัง"""
         total_value = self._inv.get_total_value()
-        total_items = len(self._inv._items)
-        return total_value / total_items
+        total_quantity = sum(item.quantity for item in self._inv._items.values())
+        if total_quantity == 0:
+            return 0.0
+        return total_value / total_quantity
