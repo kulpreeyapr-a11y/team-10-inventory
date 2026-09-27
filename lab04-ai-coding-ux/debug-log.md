@@ -31,13 +31,13 @@ Root cause: การเลือกใช้ Relational Operator ผิดป�
 
 
 
-
+# Debugging Log - discount.py
 ## Point 2: 
 `Test test_apply_coupon_valid_SAVE10` ไม่ผ่าน
 
 ### 1. Reproduce
-คำสั่งรัน: py -m pytest tests/ -v -o pythonpath=.
-Assertion Failure: AssertionError: assert 100.0 == 145.0
+- **คำสั่งรัน:** `py -m pytest tests/ -v -o pythonpath=.`
+- **Assertion Failure:** `AssertionError: assert 100.0 == 145.0` 
 
 ### 2. Traceback
 tests/test_discount.py:57: in test_apply_coupon_valid_SAVE10
