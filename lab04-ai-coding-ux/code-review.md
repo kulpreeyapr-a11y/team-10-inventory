@@ -1,31 +1,68 @@
-# Code Review Report - inventory_service.py
+# Code Review Log: inventory_service.py
 
-## Review Comments
-
-### 1. Method: `reduce_stock`
-- **ตำแหน่ง:** เมธอด `reduce_stock` บรรทัดที่ 26
-- **เหตุผลที่ผิด:** เงื่อนไขเช็กสต็อกใช้ `<` แทนที่จะเป็น `<=` ซึ่งขัดกับ docstring ที่ระบุว่าสต็อกต้องไม่น้อยกว่าหรือเท่ากับ 0
-- **กรณีที่พัง:** มีสินค้า 5 ชิ้น สั่งลดสต็อก 5 ชิ้น (`reduce_stock("ITEM01", 5)`) โค้ดผ่าน ทำให้สต็อกกลายเป็น 0 ชิ้น และถ้าตัดสต็อกซ้ำอีกจะติดลบ
-- **ทางออกที่เสนอ:** แก้ไขเป็น `if self.items[item_id]["quantity"] <= quantity:`
-
-### 2. Method: `calculate_average_price`
-- **ตำแหน่ง:** เมธอด `calculate_average_price` บรรทัดที่ 34
-- **เหตุผลที่ผิด:** ไม่มีการตรวจสอบกรณีคลังสินค้าว่างเปล่าก่อนทำการหาร
-- **กรณีที่พัง:** เรียก `calculate_average_price()` ในขณะที่ยังไม่มีสินค้าในระบบ (`self.items = {}`) จะเกิด `ZeroDivisionError` และโปรแกรมจะ crash
-- **ทางออกที่เสนอ:** เพิ่มการเช็ก `if not self.items: return 0.0` ไว้บรรทัดแรกของเมธอด
-
-### 3. Method: `update_item_price`
-- **ตำแหน่ง:** เมธอด `update_item_price` บรรทัดที่ 39
-- **เหตุผลที่ผิด:** รับตัวแปร `user_role` เข้ามาแต่ไม่ได้นำไปตรวจสอบสิทธิ์ตาม docstring
-- **กรณีที่พัง:** ผู้ใช้ทั่วไปสั่งอัปเดตราคาโดยส่ง `user_role="guest"` แต่ระบบอนุญาตให้แก้ไขราคาสำเร็จ
-- **ทางออกที่เสนอ:** เพิ่มการเช็ก `if user_role not in ["manager", "admin"]: return False`
+## Review Checklist
+1. **Docstring Accuracy:** โค้ดตรงตาม Docstring หรือไม่ (เน้นคำว่า "หรือเท่ากับ" / ขอบเขต)
+2. **State & Partial Failure:** หากพังกลางทาง มี State ค้างหรือไม่
+3. **Concurrency & Thread Safety:** รันพร้อมกัน 2 Threads ค่าที่อ่านมาจะยังถูกต้องหรือไม่
+4. **Edge Cases & Zero Division:** ลิสต์ว่าง / ค่าเป็นศูนย์ จะเกิด Crash หรือไม่
 
 ---
 
-## สรุปหมวดหมู่และระดับความรุนแรง (Summary Table)
+## Detailed Review Comments
+
+### Issue 1: `add_stock` - Border condition handling
+- **Location:** Method `add_stock`, line 15
+- **Why it is wrong:** Docstring ระบุว่าปริมาณการเพิ่มสินค้าต้องมากกว่าหรือเท่ากับ 0 (`quantity >= 0`) แต่ตัวโค้ดใช้เงื่อนไข `if quantity > 0:` ทำให้เมื่อส่งค่า `quantity = 0` เข้ามา จะหลุดไปเข้าบล็อก `else` หรือไม่ถูกประมวลผลตามที่กำหนด
+- **Broken Example:** เรียกใช้งาน `add_stock("ITEM001", 0)`
+  - Expected: ทำงานสำเร็จโดยไม่เพิ่มจำนวน หรือคืนค่าปกติ
+  - Actual: ถูกปฏิเสธเนื่องจากไม่เข้าเงื่อนไข `quantity > 0`
+- **Proposed Fix:** เปลี่ยนเงื่อนไขจาก `if quantity > 0:` เป็น `if quantity >= 0:`
+- **Category:** correctness
+- **Severity:** medium
+
+---
+
+### Issue 2: `deduct_stock` - Partial Failure Leaves Dirty State
+- **Location:** Method `deduct_stock`, lines 32-38
+- **Why it is wrong:** มีการหักสต็อกสินค้าในหน่วยความจำไปแล้ว แต่กระบวนการบันทึกลงไฟล์/ฐานข้อมูลด้านล่างเกิด Exception/Error ทำให้ข้อมูลใน Memory ถูกหักไปแล้วแต่ไม่ได้ Save เกิด Dirty State
+- **Broken Example:** เรียก `deduct_stock("ITEM001", 5)` โดยที่ดิสก์เต็ม หรือระบบ IO พังขณะบันทึกไฟล์
+  - Expected: ย้อนคืนค่า (Rollback) สต็อกกลับเป็นจำนวนเดิมก่อนเกิด Error
+  - Actual: สต็อกถูกลดไปแล้วใน Memory ทำให้ข้อมูลไม่ตรงกับ Database/File
+- **Proposed Fix:** คำนวณสต็อกใหม่ไว้ก่อน แล้วค่อยสั่ง Save หาก Save สำเร็จจึงค่อยอัปเดตค่าเข้า State หลัก หรือใช้ Try-Except ทำ Rollback ค่าเดิม
+- **Category:** correctness
+- **Severity:** high
+
+---
+
+### Issue 3: `get_average_stock` - Division by Zero
+- **Location:** Method `get_average_stock`, line 52
+- **Why it is wrong:** นำผลรวมของสินค้าไปหารด้วยจำนวนรายการโดยตรง `total / len(items)` โดยไม่ได้เช็คว่ารายการสินค้าว่างเปล่าหรือไม่
+- **Broken Example:** เรียก `get_average_stock()` เมื่อระบบยังไม่มีสินค้าเลย (`items = []`)
+  - Expected: คืนค่า `0.0`
+  - Actual: โปรแกรม Crash ด้วย `ZeroDivisionError: division by zero`
+- **Proposed Fix:** เพิ่ม Guard Clause ด้านบนสุดของเมธอด `if not items: return 0.0`
+- **Category:** correctness
+- **Severity:** medium
+
+---
+
+### Issue 4: `update_inventory_batch` - Race Condition / Thread Safety
+- **Location:** Method `update_inventory_batch`, lines 65-70
+- **Why it is wrong:** มีการอ่านค่าสต็อกปัจจุบันมาเก็บในตัวแปร แล้วนำไปคำนวณก่อนเขียนกลับ โดยไม่มีการใช้ Lock/Synchronization หากมี 2 Threads เรียกใช้พร้อมกัน จะเกิดการ overwrite ค่าของกันและกัน (Race Condition)
+- **Broken Example:** Thread A และ Thread B อ่านสต็อกเดิม (10 ชิ้น) มาพร้อมกัน Thread A เพิ่ม 5 ชิ้น, Thread B เพิ่ม 5 ชิ้น
+  - Expected: สต็อกรวมต้องเป็น 20 ชิ้น
+  - Actual: สต็อกบันทึกทับกันเหลือเพียง 15 ชิ้น
+- **Proposed Fix:** นำ `threading.Lock()` มาครอบในขั้นตอนการ Read-Modify-Write เพื่อรับประกัน Thread Safety
+- **Category:** concurrency
+- **Severity:** high
+
+---
+
+## Summary Table
 
 | # | เมธอด | หมวด | ระดับ | สรุปปัญหา | กรณีที่ทำให้พัง |
 |---|---|---|---|---|---|
-| 1 | `reduce_stock` | correctness | high | เช็กขอบเขตสต็อกผิด ทำให้สต็อกเป็น 0 หรือติดลบได้ | ตัดสต็อกสินค้าเท่ากับจำนวนที่มีอยู่จริงในคลัง |
-| 2 | `calculate_average_price` | correctness | medium | เกิด ZeroDivisionError เมื่อไม่มีสินค้า | เรียกคำนวณราคาเฉลี่ยตอนระบบเพิ่งเริ่มต้นหรือไม่มีสินค้า |
-| 3 | `update_item_price` | security | high | ไม่เช็กสิทธิ์ผู้ใช้งานในการแก้ไขราคา | บัญชี Guest หรือผู้ใช้ทั่วไปแอบส่งคำสั่งเปลี่ยนราคาสินค้า |
+| 1 | `add_stock` | correctness | medium | ไม่รองรับกรณีใส่ quantity เป็น 0 ตามที่ docstring ระบุไว้ | `add_stock("ITEM001", 0)` |
+| 2 | `deduct_stock` | correctness | high | เกิด Partial failure หักสต็อกค้างใน memory เมื่อ IO บันทึกไฟล์พัง | เกิด Error ขณะบันทึกไฟล์ แต่สต็อกใน memory ลดไปแล้ว |
+| 3 | `get_average_stock` | correctness | medium | เกิด ZeroDivisionError เมื่อไม่มีรายการสินค้าในระบบ | เรียกใช้งานตอนคลังสินค้าว่างเปล่า `items = []` |
+| 4 | `update_inventory_batch` | concurrency | high | เกิด Race Condition เมื่อ 2 Threads แก้ไขข้อมูลพร้อมกัน | Thread A และ B อัปเดตสินค้าชิ้นเดียวกันพร้อมกัน |
