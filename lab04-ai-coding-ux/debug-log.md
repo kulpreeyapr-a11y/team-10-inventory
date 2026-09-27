@@ -31,15 +31,16 @@ Root cause: การเลือกใช้ Relational Operator ผิดป�
 
 
 
-# Debugging Log - discount.py
-## Point 2: 
-`Test test_apply_coupon_valid_SAVE10` ไม่ผ่าน
+---
+
+## Point 2: Test `test_apply_coupon_valid_SAVE10` ไม่ผ่าน
 
 ### 1. Reproduce
-- **คำสั่งรัน:** `py -m pytest tests/ -v -o pythonpath=.`
-- **Assertion Failure:** `AssertionError: assert 100.0 == 145.0` 
+- **คำสั่งที่รัน:** `py -m pytest tests/ -v -o pythonpath=.`
+- **Assertion ที่ fail:** `AssertionError: assert 100.0 == 145.0`
 
 ### 2. Traceback
+```text
 tests/test_discount.py:57: in test_apply_coupon_valid_SAVE10
     assert apply_coupon(1000, "SAVE10") == 145.0
 E   AssertionError: assert 100.0 == 145.0
