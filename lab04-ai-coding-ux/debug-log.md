@@ -14,6 +14,7 @@ discount.py:17: in calculate_discount
     elif amount > 1000:
 E   assert 0.0 == 50.0
 
+```
 ### 3. สมมติฐาน
 เงื่อนไขตรวจสอบยอดซื้อใช้เครื่องหมายมากกว่าอย่างเดียว (amount > 1000) ทำให้เมื่อยอดซื้อเท่ากับ 1,000 บาทพอดี โค้ดมองว่าข้ามเงื่อนไขนี้ไป และส่งค่าส่วนลดคืนกลับมาเป็น 0.0
 
@@ -34,30 +35,21 @@ Root cause: การเลือกใช้ Relational Operator ผิดป�
 ## Point 2: 
 `Test test_apply_coupon_valid_SAVE10` ไม่ผ่าน
 
-1. Reproduce
+### 1. Reproduce
 คำสั่งรัน: py -m pytest tests/ -v -o pythonpath=.
-
 Assertion Failure: AssertionError: assert 100.0 == 145.0
 
-
-
-2. Traceback
+### 2. Traceback
 tests/test_discount.py:57: in test_apply_coupon_valid_SAVE10
     assert apply_coupon(1000, "SAVE10") == 145.0
 E   AssertionError: assert 100.0 == 145.0
 
-
-
-3. สมมติฐาน
+### 3. สมมติฐาน
 ฟังก์ชัน apply_coupon มีการเรียกใช้ calculate_discount(1000) เพื่อคำนวณราคาส่วนลดตั้งต้น เมื่อ calculate_discount ทำงานผิดพลาด ณ จุดขอบเขต 1,000 บาท จึงทำให้ส่วนลดคูปองคำนวณผิดพลาดตามไปด้วย
 
-
-
-4. การยืนยัน
+### 4. การยืนยัน
 ตรวจสอบการทำงานของ apply_coupon พบว่า Logic คำนวณคูปองถูกต้องแล้ว แต่ผลลัพธ์ของ base_discount ที่ส่งมาจาก calculate_discount(1000) ได้ค่าเป็น 0.0 ซึ่งไม่ถูกต้อง
 
-
-
-5. Root cause และการแก้
+### 5. Root cause และการแก้
 Root cause: เกิดผลกระทบสืบเนื่อง (Side Effect) จาก Bug ขอบเขตในฟังก์ชัน calculate_discount
 การแก้: เมื่อทำการแก้ไข Bug ขอบเขตที่ calculate_discount เรียบร้อยแล้ว ฟังก์ชัน apply_coupon ก็กลับมาทำงานถูกต้องและทดสอบผ่านทั้งหมดโดยไม่ต้องแก้โค้ดภายในตัวมันเอง
