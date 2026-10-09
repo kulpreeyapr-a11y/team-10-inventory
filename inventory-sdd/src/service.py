@@ -1,4 +1,4 @@
-from typing import List, Dict
+
 from src.models import Product
 from src.notifiers import Notifier
 
@@ -6,8 +6,8 @@ from src.notifiers import Notifier
 class InventoryService:
     """จัดการระบบคลังสินค้า และการแจ้งเตือนแบบ Observer Pattern"""
     def __init__(self) -> None:
-        self.products: Dict[str, Product] = {}
-        self._observers: List[Notifier] = []  # List ของ Observer (Notifier)
+        self.products: dict[str, Product] = {}
+        self._observers: list[Notifier] = []  # List ของ Observer (Notifier)
 
     def attach_observer(self, notifier: Notifier) -> None:
         """ลงทะเบียน Observer ใหม่"""
@@ -47,12 +47,15 @@ class InventoryService:
 
         # เช็กเงื่อนไขสต็อกต่ำ (< threshold) แล้วแจ้งเตือน Observers
         if product.quantity < product.threshold:
-            msg = f"เตือนภัย: สินค้า {product.name} คงเหลือ {product.quantity} ต่ำกว่า Threshold ({product.threshold})"
-            self._notify_observers(msg)
+            msg = (
+            f"เตือนภัย: สินค้า {product.name} คงเหลือ {product.quantity} "
+            f"ต่ำกว่า Threshold ({product.threshold})"
+        )
+        self.notify_observers(msg)  # นำตัวแปร msg มาใช้งานต่อ
 
-    def generate_value_report(self) -> Dict[str, float]:
+    def generate_value_report(self) -> dict[str, float]:
         """รายงานมูลค่าสินค้าแยกตามหมวดหมู่"""
-        report: Dict[str, float] = {}
+        report: dict[str, float] = {}
         for product in self.products.values():
             category_name = product.category.name
             val = product.quantity * product.unit_price

@@ -8,7 +8,7 @@ def load_data():
     """ฟังก์ชันโหลดข้อมูลจากไฟล์ JSON"""
     if not os.path.exists(DATA_FILE):
         return []
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
+    with open(DATA_FILE, encoding="utf-8") as f:
         return json.load(f)
 
 def save_data(data):

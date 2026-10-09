@@ -6,7 +6,7 @@ DB_FILE = "inventory.json"
 def load_items():
     if not os.path.exists(DB_FILE):
         return {}
-    with open(DB_FILE, "r", encoding="utf-8") as f:
+    with open(DB_FILE, encoding="utf-8") as f:
         try:
             return json.load(f)
         except json.JSONDecodeError:

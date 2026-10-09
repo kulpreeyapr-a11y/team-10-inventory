@@ -1,4 +1,5 @@
-from inventory import Inventory, InventoryItem
+from inventory import Inventory
+
 
 def test_low_stock_empty_inventory():
     inv = Inventory()
