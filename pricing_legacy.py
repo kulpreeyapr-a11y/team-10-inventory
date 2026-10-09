@@ -51,9 +51,8 @@ def apply_membership_and_coupons(
             t -= 50.0
         elif coupon == "HALF":
             t *= 0.5
-        elif coupon == "NEWYEAR":
-            if today.month == 1:
-                t *= 0.8
+        elif coupon == "NEWYEAR" and today.month == 1:
+            t *= 0.8
 
     if t < 0:
         t = 0.0
