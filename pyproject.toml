@@ -1,6 +1,6 @@
-[tool.ruff]
-line-length = 100
-extend-exclude = ["lab04-ai-coding-ux", "pricing_legacy.py"]
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+[tool.setuptools]
+packages = ["inventory"]
