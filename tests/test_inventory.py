@@ -62,7 +62,7 @@ def test_sell_exceed_stock():
     inv.add_item("Pen", 5, 5.0)
     import pytest
     with pytest.raises(ValueError):
-        inv.sell("Pen", 500000000000)
+        inv.sell("Pen", 10)
 
 
 def test_sell_item_not_found():
