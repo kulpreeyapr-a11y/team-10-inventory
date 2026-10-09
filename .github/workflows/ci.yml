@@ -19,10 +19,12 @@ jobs:
           python-version: "3.11"
 
       - name: ติดตั้ง package
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
 
       - name: ตรวจด้วย ruff
         run: ruff check .
 
       - name: รัน test พร้อมเกณฑ์ coverage ขั้นต่ำ
-        run: pytest tests/ --cov=. --cov-report=term-missing --cov-fail-under=85
+        run: PYTHONPATH=. pytest tests/ --cov=. --cov-report=term-missing --cov-fail-under=85
