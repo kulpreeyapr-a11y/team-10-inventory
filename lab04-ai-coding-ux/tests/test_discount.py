@@ -1,8 +1,7 @@
 # ไฟล์นี้ถูก generate จากใบงาน Lab 4 ด้วย scripts/build_lab04_handout_code.py
 # ห้ามแก้ไฟล์นี้โดยตรง ให้แก้ที่ใบงานแล้ว generate ใหม่
 # tests/test_discount.py
-import pytest
-from discount import apply_discount, bulk_total, average_price, cheapest_n
+from discount import apply_discount, average_price, bulk_total, cheapest_n
 
 
 def test_apply_discount_basic():
