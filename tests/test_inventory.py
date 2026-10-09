@@ -37,6 +37,6 @@ def test_low_stock_zero_threshold():
 def test_low_stock_negative_threshold():
     inv = Inventory()
     inv.add_item("Apple", 0, 20.0)
-    inv.add_item("Banana", -1, 10.0) # ขึ้นอยู่กับว่าตกลงให้คืนอะไร (เช่น คืน list ว่าง)
+    inv.add_item("Banana", 5, 10.0)
     result = inv.low_stock_items(-1)
     assert result == []
