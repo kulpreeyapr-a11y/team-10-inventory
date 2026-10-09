@@ -2,6 +2,7 @@
 # โมดูลคำนวณราคาและส่วนลดของระบบ Inventory
 # รีแฟกเตอร์ใหม่ให้สะอาดขึ้น อ่านง่ายขึ้น และคงพฤติกรรมเดิมครบถ้วน
 
+from __future__ import annotations
 import datetime
 
 TAX = 0.07
