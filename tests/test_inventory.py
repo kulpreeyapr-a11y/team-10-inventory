@@ -64,6 +64,7 @@ def test_sell_exceed_stock():
     with pytest.raises(ValueError):
         inv.sell("Pen", 10)
 
+
 def test_sell_item_not_found():
     inv = Inventory()
     import pytest

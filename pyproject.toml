@@ -1,6 +1,18 @@
-[tool.ruff]
-line-length = 100
-extend-exclude = ["lab04-ai-coding-ux", "pricing_legacy.py"]
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+[project]
+name = "team-10-inventory"
+version = "0.1.0"
+description = "Inventory management system"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0"
+]
+
+[tool.setuptools]
+py-modules = ["inventory", "pricing_legacy"]
