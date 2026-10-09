@@ -40,3 +40,38 @@ def test_low_stock_negative_threshold():
     inv.add_item("Banana", 5, 10.0)
     result = inv.low_stock_items(-1)
     assert result == []
+
+def test_sell_exact_all():
+    inv = Inventory()
+    inv.add_item("Pen", 10, 5.0)
+    remaining = inv.sell("Pen", 10)
+    assert remaining == 0
+
+def test_sell_zero_or_negative():
+    inv = Inventory()
+    inv.add_item("Pen", 10, 5.0)
+    import pytest
+    with pytest.raises(ValueError):
+        inv.sell("Pen", 0)
+    with pytest.raises(ValueError):
+        inv.sell("Pen", -2)
+
+def test_sell_exceed_stock():
+    inv = Inventory()
+    inv.add_item("Pen", 5, 5.0)
+    import pytest
+    with pytest.raises(ValueError):
+        inv.sell("Pen", 10)
+
+def test_sell_item_not_found():
+    inv = Inventory()
+    import pytest
+    with pytest.raises(KeyError):
+        inv.sell("NonExistent", 2)
+
+def test_sell_invalid_type():
+    inv = Inventory()
+    inv.add_item("Pen", 10, 5.0)
+    import pytest
+    with pytest.raises(TypeError):
+        inv.sell("Pen", "two")
