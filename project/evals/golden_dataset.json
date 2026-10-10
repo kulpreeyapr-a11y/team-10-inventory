@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "question": "ถ้ารายวิชาบังคับถอนได้ถึงสัปดาห์ไหน",
+        "expected_answer": "ถอนได้ถึงสัปดาห์ที่ 12 ของภาคการศึกษา",
+        "category": "academic_regulation"
+    },
+    {
+        "id": 2,
+        "question": "เกรด S กับ U มีผลกับค่าเฉลี่ยสะสม (GPAX) หรือไม่",
+        "expected_answer": "ไม่มีผลต่อการคำนวณค่าระดับคะแนนเฉลี่ยสะสม",
+        "category": "grading_system"
+    }
+]
