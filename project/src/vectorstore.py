@@ -5,9 +5,9 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 class VectorStoreManager:
     def __init__(self, persist_directory: str = "./chroma_db", collection_name: str = "course_regulation"):
-        # ใช้โมเดล Embedding ของ Google เพื่อแปลงข้อความให้อยู่ในรูป Vector
+        # อัปเดตมาใช้โมเดลใหม่ล่าสุดที่ Google รองรับ
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-001",
             google_api_key=os.environ.get("GEMINI_API_KEY")
         )
         
