@@ -11,3 +11,10 @@
 ## 2. Alternatives Considered & Decision Rationale
 * **Vector DB (Pinecone vs ChromaDB):** เลือก ChromaDB เพราะสามารถรันแบบ Local ได้ทันที ไม่มีค่าใช้จ่าย และจัดการขอบเขตข้อมูลเอกสารภาควิชาได้สะดวกรวดเร็ว
 * **LLM Provider (OpenAI vs Gemini):** เลือก Gemini เนื่องจากมี Free Tier ช่วยควบคุมค่าใช้จ่ายไม่ให้เกินงบตาม NFR ที่ตั้งไว้
+
+# System Specification (Spec ของระบบ)
+## Tech Stack
+* **Language:** Python 3.10+
+* **Framework:** FastAPI
+* **AI Model & Embedding:** Google Generative AI (`models/gemini-embedding-001` และ Gemini Model สำหรับสร้างคำตอบ)
+* **Environment Management:** `python-dotenv`
